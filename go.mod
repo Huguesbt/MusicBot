@@ -3,7 +3,6 @@ module github.com/Huguesbt/MusicBot
 go 1.15
 
 require (
-	github.com/Andreychik32/ytdl v1.0.4
 	github.com/boltdb/bolt v1.3.1
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/fsnotify/fsnotify v1.4.9
