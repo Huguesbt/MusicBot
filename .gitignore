@@ -36,7 +36,10 @@
 # 
 ################################################
 
+/.idea
 bin/*
 ignore/*
 musicbot
 MusicBot.db
+bot.toml
+/vendor

@@ -35,7 +35,6 @@ func DiscordConnect() (err error) {
 	log.Println("INFO: Bot is now running. Press CTRL-C to exit.")
 	purgeRoutine()
 	initRoutine()
-	dg.UpdateStatus(0, o.DiscordStatus)
 	return nil
 }
 
@@ -100,6 +99,7 @@ func ChMessageSendHold(textChannelID, message string) {
 
 // ChMessageSend send a message and auto-remove it in a time
 func ChMessageSend(textChannelID, message string) {
+	log.Println(message)
 	for i := 0; i < 10; i++ {
 		msg, err := dg.ChannelMessageSend(textChannelID, message)
 		if err != nil {
@@ -151,7 +151,6 @@ func initRoutine() {
 // ConnectHandler
 func ConnectHandler(s *discordgo.Session, connect *discordgo.Connect) {
 	log.Println("INFO: Connected!!")
-	s.UpdateStatus(0, o.DiscordStatus)
 }
 
 // GuildCreateHandler
@@ -205,6 +204,7 @@ func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	*/
 	// Method with database (persistent)
 	guildID := SearchGuild(m.ChannelID)
+	log.Println(guildID, m.GuildID)
 	v := voiceInstances[guildID]
 	owner, _ := s.Guild(guildID)
 	content := strings.Replace(m.Content, o.DiscordPrefix, "", 1)

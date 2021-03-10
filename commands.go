@@ -83,7 +83,6 @@ func LeaveReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 	mutex.Lock()
 	delete(voiceInstances, v.guildID)
 	mutex.Unlock()
-	dg.UpdateStatus(0, o.DiscordStatus)
 	ChMessageSend(m.ChannelID, "[**Music**] I left the voice channel!")
 }
 
@@ -157,7 +156,6 @@ func StopReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 		return
 	}
 	v.Stop()
-	dg.UpdateStatus(0, o.DiscordStatus)
 	log.Println("INFO: The bot stop play audio")
 	ChMessageSend(m.ChannelID, "[**Music**] I'm stoped now!")
 }
@@ -388,12 +386,10 @@ func StatusReporter(m *discordgo.MessageCreate) {
 	}
 	command := strings.SplitAfter(m.Content, "status")
 	status := strings.TrimSpace(command[1])
-	dg.UpdateStatus(0, status)
 	ChMessageSend(m.ChannelID, "[**Music**] Status: `"+status+"`")
 }
 
 // StatusCleanReporter
 func StatusCleanReporter(m *discordgo.MessageCreate) {
 	log.Println("INFO:", m.Author.Username, "send 'statusclean'")
-	dg.UpdateStatus(0, "")
 }

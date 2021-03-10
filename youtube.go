@@ -1,22 +1,24 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/google/google-api-go-client/googleapi/transport"
-	"github.com/rylio/ytdl"
+	kkdaiYoutube "github.com/kkdai/youtube/v2"
+	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"log"
-	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func getDuration(stringRawFull, stringRawOffset string) (stringRemain string) {
-	// stringRawFull format: P1DT3H45M2S or PT3H45M2S
-	// stringRawOffset format: 4325s (at seconds)
+var (
+	Client kkdaiYoutube.Client
+)
 
+func getDuration(stringRawFull, stringRawOffset string) (stringRemain string) {
 	var stringFull string
 	var duration TimeDuration
 	var partial time.Duration
@@ -63,15 +65,10 @@ func getDuration(stringRawFull, stringRawOffset string) (stringRemain string) {
 	return fmt.Sprintf("%d:%02d:%02d:%02d", t.Day, t.Hour, t.Minute, t.Second)
 }
 
-func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCreate) (song_struct PkgSong, err error) { //(url, title, time string, err error)
-
-	client := &http.Client{
-		Transport: &transport.APIKey{Key: o.YoutubeToken},
-	}
-
-	service, err := youtube.New(client)
+func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCreate) (song_struct PkgSong, err error) {
+	service, err := youtube.NewService(context.Background(), option.WithAPIKey(o.YoutubeToken))
 	if err != nil {
-		//log.Fatalf("Error creating new YouTube client: %v", err)
+		log.Printf("Error creating new YouTube client: %v", err)
 		return
 	}
 
@@ -95,18 +92,20 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 		}
 	}
 
-	call := service.Search.List("id,snippet").Q(searchString).MaxResults(1)
+	log.Println(searchString)
+	call := service.Search.List([]string{"id", "snippet"}).Q(searchString).MaxResults(1)
 	response, err := call.Do()
 	if err != nil {
-		//log.Fatalf("Error making search API call: %v", err)
+		log.Printf("error making search API call: %v", err)
 		return
 	}
 
 	var (
-		audioId, audioTitle string //, fileVideoID string
+		audioId, audioTitle string
 	)
 
 	for _, item := range response.Items {
+		log.Println(item)
 		audioId = item.Id.VideoId
 		audioTitle = item.Snippet.Title
 	}
@@ -115,16 +114,18 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 		return
 	}
 
-	vid, err := ytdl.GetVideoInfo("https://www.youtube.com/watch?v=" + audioId)
+	vid := getVideoInfo(audioId)
+	format := vid.Formats.FindByQuality("360p")
+	log.Println(format)
+	urlStr, err := Client.GetStreamURL(vid, format)
 	if err != nil {
-		//ChMessageSend(textChannelID, "Sorry, nothing found for query: "+strings.Trim(searchString, " "))
+		log.Println(err)
+		ChMessageSend(m.ChannelID, "Sorry, nothing found for query: "+strings.Trim(searchString, " "))
 		return
 	}
-	format := vid.Formats.Extremes(ytdl.FormatAudioBitrateKey, true)[0]
-	videoURL, err := vid.GetDownloadURL(format)
-	//log.Println(err)
+	videoURL, _ := url.Parse(urlStr)
 
-	videos := service.Videos.List("contentDetails").Id(vid.ID)
+	videos := service.Videos.List([]string{"contentDetails"}).Id(vid.ID)
 	resp, err := videos.Do()
 
 	duration := resp.Items[0].ContentDetails.Duration
@@ -164,6 +165,19 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 
 	song_struct.data = song
 	song_struct.v = v
+
+	return
+}
+
+func getVideoInfo(videoID string) (video *kkdaiYoutube.Video) {
+	var (
+		err error
+	)
+
+	video, err = Client.GetVideo(videoID)
+	if err != nil {
+		panic(err)
+	}
 
 	return
 }

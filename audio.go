@@ -82,7 +82,6 @@ func (v *VoiceInstance) PlayQueue(song Song) {
 		defer v.audioMutex.Unlock()
 		for {
 			if len(v.queue) == 0 {
-				dg.UpdateStatus(0, o.DiscordStatus)
 				ChMessageSend(v.nowPlaying.ChannelID, "[**Music**] End of queue!")
 				return
 			}
@@ -90,9 +89,6 @@ func (v *VoiceInstance) PlayQueue(song Song) {
 			go ChMessageSend(v.nowPlaying.ChannelID, "[**Music**] Playing, **`"+
 				v.nowPlaying.Title+"`  -  `("+v.nowPlaying.Duration+")`  -  **<@"+v.nowPlaying.ID+">\n") //*`"+ v.nowPlaying.User +"`***")
 			// If monoserver
-			if o.DiscordPlayStatus {
-				dg.UpdateStatus(0, v.nowPlaying.Title)
-			}
 			v.stop = false
 			v.skip = false
 			v.speaking = true
@@ -116,9 +112,6 @@ func (v *VoiceInstance) PlayQueue(song Song) {
 func (v *VoiceInstance) Radio(url string) {
 	v.audioMutex.Lock()
 	defer v.audioMutex.Unlock()
-	if o.DiscordPlayStatus {
-		dg.UpdateStatus(0, "Radio")
-	}
 	v.radioFlag = true
 	v.stop = false
 	v.speaking = true
@@ -127,7 +120,6 @@ func (v *VoiceInstance) Radio(url string) {
 
 	v.DCA(url)
 
-	dg.UpdateStatus(0, o.DiscordStatus)
 	v.radioFlag = false
 	v.stop = false
 	v.speaking = false
