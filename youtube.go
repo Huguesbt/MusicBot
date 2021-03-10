@@ -92,7 +92,6 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 		}
 	}
 
-	log.Println(searchString)
 	call := service.Search.List([]string{"id", "snippet"}).Q(searchString).MaxResults(1)
 	response, err := call.Do()
 	if err != nil {
@@ -105,7 +104,6 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 	)
 
 	for _, item := range response.Items {
-		log.Println(item)
 		audioId = item.Id.VideoId
 		audioTitle = item.Snippet.Title
 	}
@@ -116,7 +114,6 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 
 	vid := getVideoInfo(audioId)
 	format := vid.Formats.FindByQuality("360p")
-	log.Println(format)
 	urlStr, err := Client.GetStreamURL(vid, format)
 	if err != nil {
 		log.Println(err)
