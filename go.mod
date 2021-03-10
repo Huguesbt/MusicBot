@@ -1,4 +1,4 @@
-module MusicBot
+module github.com/Huguesbt/MusicBot
 
 go 1.15
 

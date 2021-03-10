@@ -99,7 +99,6 @@ func ChMessageSendHold(textChannelID, message string) {
 
 // ChMessageSend send a message and auto-remove it in a time
 func ChMessageSend(textChannelID, message string) {
-	log.Println(message)
 	for i := 0; i < 10; i++ {
 		msg, err := dg.ChannelMessageSend(textChannelID, message)
 		if err != nil {
@@ -204,7 +203,6 @@ func MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	*/
 	// Method with database (persistent)
 	guildID := SearchGuild(m.ChannelID)
-	log.Println(guildID, m.GuildID)
 	v := voiceInstances[guildID]
 	owner, _ := s.Guild(guildID)
 	content := strings.Replace(m.Content, o.DiscordPrefix, "", 1)

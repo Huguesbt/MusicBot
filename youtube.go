@@ -116,7 +116,7 @@ func YoutubeFind(searchString string, v *VoiceInstance, m *discordgo.MessageCrea
 	format := vid.Formats.FindByQuality("360p")
 	urlStr, err := Client.GetStreamURL(vid, format)
 	if err != nil {
-		log.Println(err)
+		log.Println("error get stream url", err)
 		ChMessageSend(m.ChannelID, "Sorry, nothing found for query: "+strings.Trim(searchString, " "))
 		return
 	}
